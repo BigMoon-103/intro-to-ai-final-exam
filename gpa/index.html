@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transcript & GPA — Ilia State University</title>
+<style>
+  :root{
+    --ink:#16233f;
+    --ink-soft:#3c4a6b;
+    --parchment:#f7f4ec;
+    --paper:#fffdf8;
+    --rule:#c9c2ab;
+    --gold:#a9822c;
+    --gold-deep:#7c5e1e;
+    --fail:#8a2c2c;
+    --progress:#8a6d1f;
+    --pass:#1f5c3f;
+    --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --mono: 'Courier New', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% 8%, rgba(169,130,44,0.05), transparent 45%),
+      var(--parchment);
+    color:var(--ink);
+    font-family:var(--serif);
+    padding:0 0 6rem;
+  }
+
+  header{
+    padding:3.2rem 6vw 2rem;
+    border-bottom:2px solid var(--ink);
+    position:relative;
+  }
+
+  .seal{
+    position:absolute;
+    top:2.4rem;
+    right:6vw;
+    width:64px;
+    height:64px;
+    border:1.5px solid var(--gold-deep);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:var(--serif);
+    font-size:0.62rem;
+    letter-spacing:0.06em;
+    text-align:center;
+    color:var(--gold-deep);
+    line-height:1.15;
+    padding:6px;
+  }
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:0.72rem;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--gold-deep);
+    margin:0 0 0.6rem;
+  }
+
+  h1{
+    font-size:clamp(2rem, 4.4vw, 3.1rem);
+    margin:0 0 0.3rem;
+    font-weight:400;
+    letter-spacing:0.01em;
+    max-width:20ch;
+  }
+
+  .program-line{
+    display:flex;
+    align-items:center;
+    gap:0.55rem;
+    margin-top:1rem;
+    font-size:1.05rem;
+    color:var(--ink-soft);
+  }
+
+  .program-line strong{
+    color:var(--ink);
+    font-weight:600;
+    border-bottom:1px solid var(--gold);
+    padding-bottom:1px;
+  }
+
+  .info-wrap{
+    position:relative;
+    display:inline-flex;
+  }
+
+  .info-icon{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    border:1.4px solid var(--gold-deep);
+    color:var(--gold-deep);
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:0.85rem;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    background:var(--paper);
+    user-select:none;
+    flex-shrink:0;
+  }
+
+  .info-icon:hover, .info-icon.active{
+    background:var(--gold-deep);
+    color:var(--paper);
+  }
+
+  .tooltip{
+    display:none;
+    position:absolute;
+    top:130%;
+    left:0;
+    z-index:40;
+    width:min(560px, 84vw);
+    max-height:60vh;
+    overflow-y:auto;
+    background:var(--paper);
+    border:1px solid var(--ink);
+    box-shadow:6px 6px 0 rgba(22,35,63,0.12);
+    padding:1.6rem 1.8rem;
+    font-size:0.92rem;
+    line-height:1.6;
+    color:var(--ink);
+  }
+
+  .tooltip.show{ display:block; }
+
+  .tooltip h3{
+    font-size:1.05rem;
+    margin:0 0 0.9rem;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    border-bottom:1px solid var(--rule);
+    padding-bottom:0.5rem;
+  }
+
+  .tooltip ol{ padding-left:1.2rem; margin:0.4rem 0 1rem; }
+  .tooltip li{ margin-bottom:0.55rem; }
+  .tooltip p.note{ font-size:0.82rem; color:var(--ink-soft); font-style:italic; }
+
+  .tooltip table{
+    width:100%;
+    border-collapse:collapse;
+    font-family:var(--mono);
+    font-size:0.76rem;
+    margin:0.6rem 0 1.1rem;
+  }
+  .tooltip table th, .tooltip table td{
+    border:1px solid var(--rule);
+    padding:0.3rem 0.4rem;
+    text-align:center;
+  }
+  .tooltip table th{ background:var(--parchment); font-family:var(--serif); font-style:italic; }
+
+  main{
+    padding:2.6rem 6vw 0;
+  }
+
+  .table-frame{
+    border:1px solid var(--ink);
+    background:var(--paper);
+    box-shadow:8px 8px 0 rgba(22,35,63,0.06);
+  }
+
+  table.transcript{
+    width:100%;
+    border-collapse:collapse;
+    font-size:0.95rem;
+  }
+
+  table.transcript thead th{
+    text-align:left;
+    font-family:var(--mono);
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--paper);
+    background:var(--ink);
+    padding:0.9rem 1.1rem;
+  }
+
+  table.transcript thead th:nth-child(2),
+  table.transcript thead th:nth-child(3),
+  table.transcript thead th:nth-child(4){ text-align:center; }
+
+  table.transcript tbody td{
+    padding:0.62rem 1.1rem;
+    border-bottom:1px solid var(--rule);
+  }
+
+  table.transcript tbody tr:last-child td{ border-bottom:none; }
+
+  table.transcript tbody td:nth-child(2),
+  table.transcript tbody td:nth-child(3),
+  table.transcript tbody td:nth-child(4){
+    text-align:center;
+    font-family:var(--mono);
+  }
+
+  table.transcript tbody tr:hover{ background:rgba(169,130,44,0.06); }
+
+  tr.added-row td:first-child::after{
+    content:" +";
+    color:var(--gold-deep);
+    font-family:var(--mono);
+  }
+
+  tr.ai-row{ background:rgba(138,109,31,0.08); }
+  tr.ai-row td:first-child::after{
+    content:" (in progress)";
+    font-size:0.74rem;
+    font-style:italic;
+    color:var(--progress);
+  }
+
+  .status{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:0.72rem;
+    letter-spacing:0.05em;
+    padding:0.15rem 0.55rem;
+    border-radius:2px;
+  }
+  .status.yes{ color:var(--pass); border:1px solid var(--pass); }
+  .status.no{ color:var(--fail); border:1px solid var(--fail); }
+
+  .controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:1.1rem;
+    align-items:flex-start;
+    margin-top:2.4rem;
+  }
+
+  .btn{
+    font-family:var(--serif);
+    font-size:1rem;
+    letter-spacing:0.01em;
+    padding:0.85rem 1.7rem;
+    border:1.4px solid var(--ink);
+    background:var(--ink);
+    color:var(--paper);
+    cursor:pointer;
+    transition:transform 0.12s ease, box-shadow 0.12s ease;
+    box-shadow:4px 4px 0 rgba(22,35,63,0.18);
+  }
+  .btn:hover{ transform:translate(-2px,-2px); box-shadow:6px 6px 0 rgba(22,35,63,0.22); }
+  .btn:active{ transform:translate(0,0); box-shadow:2px 2px 0 rgba(22,35,63,0.18); }
+
+  .btn.secondary{
+    background:var(--paper);
+    color:var(--ink);
+  }
+
+  .btn-block{
+    display:flex;
+    flex-direction:column;
+    gap:0.5rem;
+    max-width:340px;
+  }
+
+  .btn-desc{
+    font-size:0.82rem;
+    color:var(--ink-soft);
+    line-height:1.45;
+    font-style:italic;
+  }
+
+  .results{
+    margin-top:2.6rem;
+    display:flex;
+    flex-wrap:wrap;
+    gap:1.4rem;
+  }
+
+  .result-card{
+    flex:1 1 260px;
+    background:var(--ink);
+    color:var(--paper);
+    padding:1.6rem 1.8rem;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .result-card::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0;
+    height:4px;
+    background:var(--gold);
+  }
+
+  .result-card.dim{ background:var(--paper); color:var(--ink); border:1.4px dashed var(--rule); }
+  .result-card.dim::before{ display:none; }
+
+  .result-label{
+    font-family:var(--mono);
+    font-size:0.7rem;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    opacity:0.8;
+    margin-bottom:0.6rem;
+  }
+
+  .result-value{
+    font-size:2.6rem;
+    line-height:1;
+    font-weight:400;
+  }
+
+  .result-sub{
+    margin-top:0.6rem;
+    font-size:0.8rem;
+    opacity:0.85;
+    font-family:var(--mono);
+  }
+
+  footer{
+    margin-top:3.5rem;
+    padding:1.6rem 6vw 0;
+    border-top:1px solid var(--rule);
+    font-size:0.78rem;
+    color:var(--ink-soft);
+    font-family:var(--mono);
+    letter-spacing:0.02em;
+  }
+
+  @media (max-width:640px){
+    header, main, footer{ padding-left:5vw; padding-right:5vw; }
+    .seal{ display:none; }
+    table.transcript{ font-size:0.8rem; }
+    table.transcript thead th, table.transcript tbody td{ padding:0.5rem 0.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="seal">ILIA<br>STATE<br>UNIV.</div>
+  <p class="eyebrow">Academic Record — GPA Worksheet</p>
+  <h1>Transcript &amp; GPA Calculator</h1>
+  <div class="program-line">
+    Programme: <strong>Bachelor's Programme (Major), Computer Engineering (International)</strong>
+    <span class="info-wrap">
+      <span class="info-icon" id="infoIcon" tabindex="0" role="button" aria-label="GPA calculation rule">i</span>
+      <div class="tooltip" id="tooltip">
+        <h3>GPA Calculation Rule — Ilia State University</h3>
+        <ol>
+          <li>GPA is the sum of the products of the GP (Grade Point) obtained in each course and that course's credits, divided by the total credits taken:
+            <br><em>GPA = Σ (GP of each course × credits of each course) / Σ (credits of each course)</em>
+          </li>
+          <li>GP represents a course assessment converted onto a 4‑point scale.</li>
+          <li>Grading categories: F 0–50 (fail), E 51–60, D 61–70, C 71–80, B 81–90, A 91–95, A+ 96–100.</li>
+          <li>Within the GP system: category E (51–60) is fixed at 1.00 GP; categories D, C, B, A (61–95 points) rise in equal steps of 1/12 (≈0.08) per point; category A+ (96–100) is fixed at 4.00 GP.</li>
+          <li>GPA is issued for all academic programmes except doctoral studies, and is not issued for certificate programmes.</li>
+          <li>Only the final GPA is shown on the diploma supplement (except for the single‑cycle graduate medical programme).</li>
+          <li>The final GPA is rounded to the nearest tenth.</li>
+        </ol>
+        <table>
+          <thead><tr><th>Sign</th><th>F</th><th>E</th><th>D</th><th>C</th><th>B</th><th>A</th><th>A+</th></tr></thead>
+          <tbody>
+            <tr><td>Score range</td><td>0–50</td><td>51–60</td><td>61–70</td><td>71–80</td><td>81–90</td><td>91–95</td><td>96–100</td></tr>
+            <tr><td>GP at top of range</td><td>0.00</td><td>1.00</td><td>1.83</td><td>2.67</td><td>3.50</td><td>3.92</td><td>4.00</td></tr>
+          </tbody>
+        </table>
+        <p class="note">Within D–A, GP increases continuously and equally by 1/12 per point, since the underlying score differences in E and A+ are not considered meaningful.</p>
+      </div>
+    </span>
+  </div>
+</header>
+
+<main>
+  <div class="table-frame">
+    <table class="transcript">
+      <thead>
+        <tr><th>Course</th><th>Credit</th><th>Grade</th><th>Passed</th></tr>
+      </thead>
+      <tbody id="courseBody"></tbody>
+    </table>
+  </div>
+
+  <div class="controls">
+    <div class="btn-block">
+      <button class="btn" id="calcBtn">Calculate</button>
+      <p class="btn-desc">Computes your GPA from the transcript exactly as shown above, using the official Ilia State University GP formula.</p>
+    </div>
+    <div class="btn-block">
+      <button class="btn secondary" id="calcAiBtn">Calculate with Introduction to AI</button>
+      <p class="btn-desc">"Introduction to Artificial Intelligence" is still in progress. This assumes its final score equals the current accumulated points (69) plus 30 final‑exam points — i.e. 99 — and recalculates the GPA on that basis.</p>
+    </div>
+  </div>
+
+  <div class="results" id="results"></div>
+</main>
+
+<footer>
+  gpa/index.html — single-file web application, no external dependencies.
+</footer>
+
+<script>
+  const courses = [
+    { course:"Basics of Physics I (ENG)", credit:6, grade:86 },
+    { course:"Calculus I (ENG)", credit:6, grade:53 },
+    { course:"English Language Course C1-1 (ENG)", credit:6, grade:89 },
+    { course:"Introduction to Modern Thought I (ENG)", credit:6, grade:55 },
+    { course:"Introduction to Programming (ENG)", credit:6, grade:77 },
+
+    { course:"Basics of Physics II (ENG)", credit:6, grade:64 },
+    { course:"Calculus II (ENG)", credit:6, grade:55 },
+    { course:"English Language Course C1-2 (ENG)", credit:6, grade:70 },
+    { course:"Mathematical Foundation of Computing (ENG)", credit:0, grade:51 },
+    { course:"Object Oriented Programming (ENG)", credit:6, grade:73 },
+
+    { course:"Calculus III (ENG)", credit:6, grade:69 },
+    { course:"Circuit Analysis I (ENG)", credit:6, grade:62 },
+    { course:"Computer Organization (ENG)", credit:6, grade:62 },
+    { course:"Introduction to Linear Algebra (ENG)", credit:6, grade:66 },
+    { course:"Mathematical Foundation of Computing (ENG) — retake", credit:6, grade:63 },
+
+    { course:"Algorithms and Data Structures (ENG)", credit:6, grade:65 },
+    { course:"Circuit Analysis II (ENG)", credit:6, grade:77 },
+    { course:"Computational and Statistical Methods (ENG)", credit:6, grade:60 },
+    { course:"Computer and Data Networks (ENG)", credit:6, grade:99 },
+    { course:"Principles of Numerical Methods (ENG)", credit:6, grade:89 },
+
+    { course:"Academic Techniques (ENG)", credit:6, grade:100 },
+    { course:"Digital Circuits (ENG)", credit:6, grade:89 },
+    { course:"Embedded Systems (ENG)", credit:6, grade:82 },
+    { course:"Introduction to Operating Systems (ENG)", credit:6, grade:86 },
+    { course:"Signals and Systems (ENG)", credit:6, grade:71 },
+
+    { course:"Architecture and Programming of Microprocessors (ENG)", credit:6, grade:88 },
+    { course:"Basics of Entrepreneurship (ENG)", credit:6, grade:98 },
+    { course:"Drones (ENG)", credit:6, grade:87 },
+    { course:"System Programming (ENG)", credit:6, grade:68 },
+    { course:"Web Programming (ENG)", credit:6, grade:87 },
+
+    { course:"IT Project Management (ENG)", credit:6, grade:91 },
+    { course:"Introduction Computational Linguistics (ENG)", credit:6, grade:58 },
+    { course:"Introduction to Cyber Security (ENG)", credit:6, grade:75 },
+    { course:"Introduction to General Chemistry (Including Lab) (ENG)", credit:8, grade:90 },
+    { course:"Senior Design Project A (ENG)", credit:6, grade:91 },
+
+    { course:"Senior Design Project B (ENG)", credit:6, grade:0, inProgress:true },
+    { course:"Databases and Information Systems (ENG)", credit:6, grade:79 },
+    { course:"Hardware Design and Prototyping (ENG)", credit:6, grade:0, inProgress:true },
+    { course:"Introduction to Artificial Intelligence (ENG)", credit:6, grade:69, inProgress:true, isAI:true },
+  ];
+  const addedCourses = [
+    "	IT Project Testing (ENG)",
+    "	AWS Cloud Practitioner (ENG)",
+    "	Introduction to machine learning (ENG)",
+    "	DevOps Technologies (ENG)",
+    "	Electrical Energy Conversion (ENG)"
+  ].map(name => ({ course:name, credit:6, grade:100, added:true }));
+
+  const allCourses = [...courses, ...addedCourses];
+
+  function isPassed(c){
+    if (c.added) return true;
+    if (c.inProgress) return false;
+    return c.grade > 50;
+  }
+
+  function gradeSign(score){
+    if (score <= 50) return "F";
+    if (score <= 60) return "E";
+    if (score <= 70) return "D";
+    if (score <= 80) return "C";
+    if (score <= 90) return "B";
+    if (score <= 95) return "A";
+    return "A+";
+  }
+ function toGP(score){
+    if (score <= 50) return 0;
+    if (score <= 60) return 1.0;
+    if (score <= 95) return 1.0 + (score - 60) / 12;
+    return 4.0;
+  }
+
+  function renderTable(){
+    const tbody = document.getElementById("courseBody");
+    tbody.innerHTML = "";
+    allCourses.forEach(c => {
+      const tr = document.createElement("tr");
+      if (c.added) tr.classList.add("added-row");
+      if (c.isAI) tr.classList.add("ai-row");
+      const passed = isPassed(c);
+      tr.innerHTML = `
+        <td>${c.course}</td>
+        <td>${c.credit}</td>
+        <td>${c.grade}</td>
+        <td><span class="status ${passed ? 'yes' : 'no'}">${passed ? 'Yes' : 'No'}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function computeGPA(list){
+    let weighted = 0, totalCredit = 0;
+    list.forEach(c => {
+      const gp = toGP(c.grade);
+      weighted += gp * c.credit;
+      totalCredit += c.credit;
+    });
+    return { gpa: totalCredit ? weighted / totalCredit : 0, totalCredit };
+  }
+
+  function renderResult(title, gpaData, note, dim){
+    const div = document.createElement("div");
+    div.className = "result-card" + (dim ? " dim" : "");
+    div.innerHTML = `
+      <div class="result-label">${title}</div>
+      <div class="result-value">${gpaData.gpa.toFixed(1)}</div>
+      <div class="result-sub">${gpaData.totalCredit} total credits · rounded to nearest tenth</div>
+      ${note ? `<div class="result-sub">${note}</div>` : ""}
+    `;
+    return div;
+  }
+
+  document.getElementById("calcBtn").addEventListener("click", () => {
+    const results = document.getElementById("results");
+    results.innerHTML = "";
+    const data = computeGPA(allCourses);
+    results.appendChild(renderResult("GPA — as shown on screen", data));
+  });
+
+  document.getElementById("calcAiBtn").addEventListener("click", () => {
+    const results = document.getElementById("results");
+    results.innerHTML = "";
+    const adjusted = allCourses.map(c => {
+      if (c.isAI){
+        return { ...c, grade: Math.min(100, c.grade + 30) };
+      }
+      return c;
+    });
+    const data = computeGPA(adjusted);
+    const aiCourse = adjusted.find(c => c.isAI);
+    results.appendChild(renderResult(
+      "GPA — with Introduction to AI projected",
+      data,
+      `Introduction to AI assumed score: 69 + 30 = ${aiCourse.grade} (${gradeSign(aiCourse.grade)}, GP ${toGP(aiCourse.grade).toFixed(2)})`
+    ));
+  });
+  const icon = document.getElementById("infoIcon");
+  const tooltip = document.getElementById("tooltip");
+
+  function showTip(){ tooltip.classList.add("show"); icon.classList.add("active"); }
+  function hideTip(){ tooltip.classList.remove("show"); icon.classList.remove("active"); }
+
+  icon.addEventListener("mouseenter", showTip);
+  icon.addEventListener("mouseleave", () => { if (!icon.matches(":focus")) hideTip(); });
+  icon.addEventListener("click", (e) => {
+    e.stopPropagation();
+    tooltip.classList.contains("show") ? hideTip() : showTip();
+  });
+  icon.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      tooltip.classList.contains("show") ? hideTip() : showTip();
+    }
+  });
+  document.addEventListener("click", (e) => {
+    if (!tooltip.contains(e.target) && e.target !== icon) hideTip();
+  });
+
+  renderTable();
+</script>
+
+</body>
+</html>
